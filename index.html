@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+                <meta charset="utf-8" /><title>title fps broke</title>
+                <style>
+                        body {
+                                background-color: #a3b5d3;
+                                margin: auto;
+                                width:fit-content;
+                                text-align: center;
+                        }
+                        input[type="range"] {
+                                width:fit-content;
+                        }
+                        h3 {
+                                line-height: 0px;
+                        }
+                </style>
+        </head>
+
+        <body onload="main()">
+                
+                <div>
+                        <canvas id="canvas">
+                                Canvas support required.
+                        </canvas>
+
+                </div>
+
+                <script src="script/main.js"></script>
+                <script src="script/glBuffer.js"></script>
+                <script src="script/glVAO.js"></script>
+                <script src="script/Shader.js"></script>
+                <script src="script/Renderer.js"></script>
+                <script src="script/Mesh.js"></script>
+                <script src="script/Camera.js"></script>
+                <script src="script/Texture.js"></script>
+                <script src="script/Shapes.js"></script>
+                <script src="script/mymath.js"></script>
+                <script src="script/OBJ.js"></script>
+                <script src="script/Material.js"></script>
+
+
+
+                <script id="pbrmat.vert" type="glsl">#version 300 es
+                        precision highp float;
+
+                        // VBO attributes
+                        in vec4 a_position;
+                        in vec2 a_tex_coord;
+                        in vec4 a_normal;
+                        in vec3 a_tangent;
+
+                        // Matrices
+                        uniform mat4 u_mvp_matrix;
+                        uniform mat4 u_view_matrix;
+                        uniform mat4 u_model_matrix;
+
+                        // Output to fragment shader
+                        out vec2 o_tex_coord;
+                        out vec3 o_normal;
+                        out vec3 o_FragPos;
+                        out vec3 o_tangent;
+                        out vec3 o_bitangent;
+
+                        void main() {
+                                o_tex_coord = a_tex_coord;
+                                mat4 normal_matrix = transpose(inverse(u_model_matrix));
+                                vec4 normal = normalize(normal_matrix * a_normal);
+                                o_normal = normalize(normal.xyz);
+
+                                vec3 bitangent = -normalize(cross(a_normal.xyz, a_tangent));
+                                o_tangent = normalize(vec3(normal_matrix * vec4(a_tangent,   0.0)));
+                                o_bitangent = normalize(vec3(normal_matrix * vec4(bitangent, 0.0)));
+
+                                o_FragPos = (u_model_matrix * a_position).xyz;
+                                gl_Position = u_mvp_matrix * a_position;
+                        }
+                </script>
+
+                <script id="pbrmat.frag" type="glsl">#version 300 es
+                        precision highp float;
+
+                        const int MAX_LIGHTS = 256;
+                        const float PI = 3.1415;
+
+                        in vec2 o_tex_coord;
+                        in vec3 o_normal;
+                        in vec3 o_FragPos;
+                        in vec3 o_tangent;
+                        in vec3 o_bitangent;
+
+                        uniform sampler2D u_albedoMap;
+                        uniform sampler2D u_metalMap;
+                        uniform sampler2D u_roughMap;
+                        uniform sampler2D u_normalMap;
+                        // not used
+                        uniform samplerCube u_envMap;
+                        uniform samplerCube u_envIrrMap;
+
+                        uniform vec3    u_viewPos;
+                        uniform vec3    u_lightPositions[MAX_LIGHTS];
+                        uniform vec3    u_lightColors[MAX_LIGHTS];
+                        uniform int     u_lightCount;
+                        uniform float   u_lightSize;
+                        uniform int u_drawNormals;
+
+                        uniform vec3  u_base_reflectivity;
+                        uniform float u_gamma;
+
+                        out vec4 FragColor;
+
+                        float NDF_DistGGX(float ndh, float roughness) {
+                                float roughnessSqrd = roughness*roughness;
+                                float ndhSqrd = ndh*ndh;
+                                float denom = (ndhSqrd * (roughnessSqrd - 1.0) + 1.0);
+                                denom = PI * denom * denom;
+
+                                return roughnessSqrd / denom;
+                        }
+                        
+                        float Geom_SmithSchlickGGX(float ndv, float ndl, float k) {
+                                float ggx1 = ndv / (ndv * (1.0 - k) + k);
+                                float ggx2 = ndl / (ndv * (1.0 - k) + k);
+                                return ggx1 * ggx2;
+                        }
+
+                        vec3 fresnelSchlick(float cosAng, vec3 f0) {
+                                return mix(f0, vec3(1.0), pow(1.01 - cosAng, 5.0));
+                        }
+
+                        // Cook-Torrence
+                vec3 lightCT(vec3 norm, vec3 viewDir,
+                        vec3 lightClr, vec3 lightPos,
+                        vec3 albedo, float metalness, float roughness) 
+                {
+                        vec3 base_reflectivity = u_base_reflectivity;
+                        float rough_clamped = clamp(roughness, 0.00025, 1.0);
+
+                        vec3 L = lightPos - o_FragPos;
+                        vec3 R = reflect(viewDir, norm);
+                        vec3 ctr2ray = (dot(L,R) * R) - L;
+                        vec3 point  = L + (u_lightSize * normalize(ctr2ray));
+                        if (length(ctr2ray) < u_lightSize) {
+                                point  = L + (length(ctr2ray) * normalize(ctr2ray));
+                        }
+
+                        vec3 lightDir = normalize(point);
+                        float dist = length(point);
+                        float ndl = max(dot(norm, lightDir), 0.0);
+                        float ndv = max(dot(norm, viewDir), 0.0);
+                        vec3 halfway = normalize(lightDir + viewDir);
+                        float ndh = max(dot(norm, halfway), 0.0);
+
+                        // Metal: albedo, NonMetal: base_reflectivity
+                        vec3 f0 = mix(base_reflectivity, albedo, metalness);
+
+                        float D = NDF_DistGGX(ndh, rough_clamped);
+                        float k = (rough_clamped+1.0) * (rough_clamped+1.0) / 8.0; // supposedly different for image based lighting
+                        float G = Geom_SmithSchlickGGX(ndv, ndl, k);
+                        vec3 F = fresnelSchlick(ndv, f0);
+
+                        vec3 specular = f0 * D * G * F * lightClr;
+                        // return specular;
+
+                        // Limitation: Sphere area lights do not affect diffuse right ?
+                        // float ndlDiff = max(dot(norm, normalize(L)), 0.0);
+                        vec3 diffuse = albedo * lightClr * (1.0-metalness);
+
+                        return ndl * (diffuse + specular) / ((dist+1.0) * (dist+1.0));
+                }
+
+                void main() {
+                        const float perceptualRoughnessExponent = 2.0;
+                        vec3 map_normal    = normalize(texture(u_normalMap, o_tex_coord).rgb * 2.0 - 1.0);
+                        mat3 tbn = mat3(o_tangent, o_bitangent, o_normal);
+                        vec3 norm = normalize(tbn * map_normal);
+
+                        vec3 viewDir = normalize(u_viewPos - o_FragPos);
+                        vec4 tex = texture(u_albedoMap, o_tex_coord);
+                        if (tex.a == 0.0) {
+                                discard; // if 100% transparent
+                        }
+                        vec3 map_albedo = tex.rgb;
+                        map_albedo = pow(map_albedo, vec3(u_gamma)); // un gamma correct because not using textures made for sRGB
+                        float map_metalness = texture(u_metalMap, o_tex_coord).r;
+                        float map_roughness = pow(texture(u_roughMap, o_tex_coord).r, perceptualRoughnessExponent);
+
+                        vec3 color = vec3(0.0, 0.0, 0.0);
+                        for (int i = 0; i < u_lightCount; i++) { 
+                                color += lightCT(norm, viewDir, 
+                                        u_lightColors[i], u_lightPositions[i],
+                                        map_albedo, map_metalness, map_roughness);
+                        }
+                        // Some tone mapping
+                        color = color / (color + vec3(1.0));
+                        // Gamma correction
+                        color = pow(color, vec3(1.0/u_gamma));
+                        FragColor = vec4(color, 1.0);
+                        if (u_drawNormals == 1) {
+                                FragColor.xyz = norm;
+                        }
+                }  
+                </script>
+
+                <script id="light.vert" type="glsl">#version 300 es
+                        precision highp float;
+
+                        uniform mat4 u_mvp_matrix;
+                        uniform vec3 u_position;
+                        uniform vec3 u_color;
+                        uniform vec3 u_viewPos;
+                        uniform float u_lightSize;
+                        out vec3 o_color;
+
+                        void main() {
+                                o_color = normalize(u_color);
+                                gl_PointSize = (1.0 + u_lightSize) * length(u_color) / length(u_viewPos - u_position);
+                                gl_Position = u_mvp_matrix * vec4(u_position, 1.0); 
+                        }
+                </script>
+
+                <script id="light.frag" type="glsl">#version 300 es
+                        precision highp float;
+                        uniform float u_gamma;
+                        in vec3 o_color;
+                        out vec4 FragColor;
+
+                void main() {
+                        vec2 coord = gl_PointCoord - vec2(0.5);
+                        float len = length(coord);
+                        if(len > 0.5) discard;
+                        vec4 color = vec4(o_color, 1.0);
+                        color.a *= pow(1.0 - 2.0 * len, 2.0);
+                        color.rgb = mix(color.rgb, vec3(1.0), pow(1.0 - 2.0 * len, 5.0));
+                        color.rgb = vec3(pow(color.rgb, vec3(1.0/u_gamma)));
+                        FragColor = color;
+                }  
+                </script>
+        </body>
+</html>   

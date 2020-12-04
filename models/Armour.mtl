@@ -1,0 +1,30 @@
+# Blender MTL File: 'Soi_Armour_A.blend'
+# Material Count: 2
+
+newmtl Armour_Cloth_Battered
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd textures/Armour/Armour_Cloth_albedo.png
+map_Pr textures/Armour/Armour_Cloth_rough.png
+map_Pm textures/Armour/Armour_Cloth_metal.png
+norm   textures/Armour/Armour_Cloth_normal.png
+
+newmtl Armour_Metal_Battered
+Ns 506.250000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd textures/Armour/Armour_Metal_albedo.png
+map_Pr textures/Armour/Armour_Metal_rough.png
+map_Pm textures/Armour/Armour_Metal_metal.png
+norm   textures/Armour/Armour_Metal_normal.png

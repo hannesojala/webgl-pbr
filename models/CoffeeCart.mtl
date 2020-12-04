@@ -1,0 +1,44 @@
+# Blender MTL File: 'CoffeeCart_01.blend'
+# Material Count: 3
+
+newmtl Coffee_Cart_Bottom
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd  textures/CoffeeCart/cart_albedo.png
+map_Pr  textures/CoffeeCart/cart_rough.png
+map_Pm  textures/CoffeeCart/cart_metal.png
+norm    textures/CoffeeCart/cart_normal.png
+
+newmtl Coffee_Cart_Top
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd  textures/CoffeeCart/coffee_machine_albedo.png
+map_Pr  textures/CoffeeCart/coffee_machine_rough.png
+map_Pm  textures/CoffeeCart/coffee_machine_metal.png
+norm    textures/CoffeeCart/coffee_machine_normal.png
+
+newmtl Mugs
+Ns 900.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 1.000000 1.000000 1.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd  textures/CoffeeCart/cart_albedo.png
+map_Pr  textures/CoffeeCart/cart_rough.png
+map_Pm  textures/CoffeeCart/cart_metal.png
+norm    textures/CoffeeCart/cart_normal.png
