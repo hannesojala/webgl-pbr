@@ -1,1 +1,1 @@
-[Link](https://hannesojala.github.io/webgl-pbr
+[Link](https://hannesojala.github.io/webgl-pbr)
