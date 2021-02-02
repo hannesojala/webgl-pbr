@@ -66,7 +66,7 @@ function main() {
     renderer.addModel("CoffeeCart", litTexShader, [-1,0,0], [0,0,0], [.8,.8,.8]);
     renderer.addModel("Armour", litTexShader, [1,0,0], [0,0,0], [1,1,1]);
 
-    alert("Models and textures will take some time to download. Controls: Move: WASD, Look: QE UDLR, Normal visuals: N. Models and textures credit cc0textures.com, texturehavencom, and soi on cgtrader.com");
+    //alert("Models and textures will take some time to download. Controls: Move: WASD, Look: QE UDLR, Normal visuals: N. Models and textures credit cc0textures.com, texturehavencom, and soi on cgtrader.com");
 
     let mx = 0; let my = 0;
     let incanvas = false;
