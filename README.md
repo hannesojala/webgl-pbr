@@ -1,3 +1,3 @@
-[Link](https://hannesojala.github.io/webgl-pbr)
+[Live](https://hannesojala.github.io/webgl-pbr)
 
-My first JS project :')
+This project was developed locally, so the assets used to test the engine are not optimized for delivery over the web. Some assets may load slowly. In the future I may make a demo with lighter assets for faster loading. The actual engine works fine, however.
