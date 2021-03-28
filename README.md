@@ -7,4 +7,4 @@ The assets are high resolution PBR textures and models from Texture Haven and CG
 
 The demo uses traditional first person camera controls (WASD + Mouse-look) and a debug toggle key (N) to switch between PBR rendering and viewing texture normal maps.
 
-It was tested on Firefox in Manjaro Linux. Some browsers may not support WebGL2 properly. If the models don't load (coffee cart, knight, and material spheres), there is a live demo at my [website](https://hannesojala.github.io/).
+It was tested on Firefox in Manjaro Linux. Some browsers may not support WebGL2 properly. If the models don't load (coffee cart, knight, and material spheres), there is a video demo at my [website](https://hannesojala.github.io/).
