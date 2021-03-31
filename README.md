@@ -5,4 +5,4 @@ This project was developed locally, so the assets used to test the engine are no
 
 Controls: WASD + Mouse-look, debug toggle key (N) to switch between PBR rendering and viewing texture normal maps.
 
-Tested on Firefox in Manjaro Linux. Some browsers may not support WebGL2 properly, or you may have to enable it yourself in the settings. If the models don't load (coffee cart, knight, and material spheres), there is a video demo at my [website](https://hannesojala.github.io/).
+Tested on Chromium and Firefox in Manjaro Linux. Some browsers may not support WebGL2 properly, or you may have to enable it yourself in the settings. If the models don't load (coffee cart, knight, and material spheres), there is a video demo at my [website](https://hannesojala.github.io/).
